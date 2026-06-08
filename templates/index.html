@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuantumGPU Telemetry Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/app.css">
+    <!-- Chart.js for smooth canvas charting -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="glow-overlay"></div>
+    <div class="dashboard-container">
+        <!-- HEADER -->
+        <header class="dashboard-header">
+            <div class="logo-area">
+                <span class="pulse-indicator active"></span>
+                <h1>QUANTUM<span class="glow-text">GPU</span></h1>
+                <span class="badge">V2.4 LIVE</span>
+            </div>
+            <div class="system-summary">
+                <span class="label">HARDWARE:</span>
+                <span id="gpu-device-name" class="val">Detecting...</span>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <div class="dashboard-grid">
+            <!-- LEFT PANEL: Telemetry Cards -->
+            <div class="panel-left">
+                <!-- GRID WIDGETS -->
+                <div class="widgets-grid">
+                    <!-- CARD 1: GPU LOAD -->
+                    <div class="glass-card metric-card" id="card-gpu-load">
+                        <div class="card-header">
+                            <h3>GPU UTILIZATION</h3>
+                            <span class="icon">⚡</span>
+                        </div>
+                        <div class="metric-value">
+                            <span id="val-gpu-util">0</span><span class="unit">%</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="fill-gpu-util" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 2: VRAM UTIL -->
+                    <div class="glass-card metric-card" id="card-vram">
+                        <div class="card-header">
+                            <h3>VRAM ALLOCATION</h3>
+                            <span class="icon">💾</span>
+                        </div>
+                        <div class="metric-value font-small">
+                            <span id="val-vram-used">0</span> <span class="divider">/</span> <span id="val-vram-total" class="muted">0</span> <span class="unit">MB</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="fill-vram" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 3: TEMPERATURE -->
+                    <div class="glass-card metric-card" id="card-temp">
+                        <div class="card-header">
+                            <h3>CORE TEMPERATURE</h3>
+                            <span class="icon">🔥</span>
+                        </div>
+                        <div class="metric-value">
+                            <span id="val-temp">0</span><span class="unit">°C</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="fill-temp" style="width: 0%"></div>
+                        </div>
+                    </div>
+
+                    <!-- CARD 4: POWER DRAW -->
+                    <div class="glass-card metric-card" id="card-power">
+                        <div class="card-header">
+                            <h3>POWER UTILIZATION</h3>
+                            <span class="icon">🔌</span>
+                        </div>
+                        <div class="metric-value">
+                            <span id="val-power">0.0</span><span class="unit">W</span>
+                        </div>
+                        <div class="progress-bar-container">
+                            <div class="progress-bar-fill" id="fill-power" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC TELEMETRY CHART -->
+                <div class="glass-card chart-card">
+                    <div class="card-header">
+                        <h3>REAL-TIME METRICS STREAM</h3>
+                        <div class="chart-legends">
+                            <span class="legend util"><span class="dot"></span> GPU Load</span>
+                            <span class="legend temp"><span class="dot"></span> Temp</span>
+                            <span class="legend power"><span class="dot"></span> Power</span>
+                        </div>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Active Executions & Models -->
+            <div class="panel-right">
+                <!-- ACTIVE BENCHMARK MONITOR -->
+                <div class="glass-card active-model-card">
+                    <div class="card-header">
+                        <h3>ACTIVE MODEL WORKLOAD</h3>
+                        <span class="status-indicator" id="model-status-badge">STANDBY</span>
+                    </div>
+                    
+                    <div class="model-display-panel">
+                        <div class="model-info-row">
+                            <span class="label">MODEL NAME:</span>
+                            <span class="value accent-text" id="active-model-name">None Running</span>
+                        </div>
+                        
+                        <div class="sub-metrics-grid">
+                            <div class="sub-metric">
+                                <span class="lbl">STEPS RUN</span>
+                                <span class="val" id="model-steps">0</span>
+                            </div>
+                            <div class="sub-metric">
+                                <span class="lbl">LATENCY</span>
+                                <span class="val"><span id="model-latency">0.0</span><span class="uni">ms</span></span>
+                            </div>
+                            <div class="sub-metric">
+                                <span class="lbl">EFFICIENCY</span>
+                                <span class="val"><span id="model-efficiency">0.0</span><span class="uni">G/W</span></span>
+                            </div>
+                            <div class="sub-metric">
+                                <span class="lbl">CURRENT LOSS</span>
+                                <span class="val" id="model-loss">0.0000</span>
+                            </div>
+                        </div>
+
+                        <div class="execution-progress-container">
+                            <div class="execution-log" id="execution-log">
+                                <div class="log-entry system">[SYSTEM] Hardware monitoring initialized. Standby for workload deployment...</div>
+                            </div>
+                        </div>
+
+                        <div class="action-btn-area">
+                            <button id="btn-kill-model" class="btn btn-danger" onclick="stopModelExecution()" disabled>ABORT EXECUTION</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CONTROLLER: Trigger Benchmarks -->
+                <div class="glass-card controller-card">
+                    <div class="card-header">
+                        <h3>WORKLOAD CONTROLLER</h3>
+                        <span class="desc">Deploy neural networks on GPU</span>
+                    </div>
+                    <div class="model-select-list">
+                        <div class="model-select-item" onclick="triggerModel('ResNet-50 Image Classifier')">
+                            <div class="model-meta">
+                                <h4>ResNet-50 Image Classifier</h4>
+                                <span class="details">High-Throughput Convolutional Sweeps</span>
+                            </div>
+                            <button class="btn btn-primary btn-run">DEPLOY</button>
+                        </div>
+
+                        <div class="model-select-item" onclick="triggerModel('BERT-Large NLP Transformer')">
+                            <div class="model-meta">
+                                <h4>BERT-Large NLP Transformer</h4>
+                                <span class="details">Heavy Attention & Matrix Math operations</span>
+                            </div>
+                            <button class="btn btn-primary btn-run">DEPLOY</button>
+                        </div>
+
+                        <div class="model-select-item" onclick="triggerModel('Stable Diffusion XL')">
+                            <div class="model-meta">
+                                <h4>Stable Diffusion XL</h4>
+                                <span class="details">Extreme VRAM Allocation and Denoising passes</span>
+                            </div>
+                            <button class="btn btn-primary btn-run">DEPLOY</button>
+                        </div>
+
+                        <div class="model-select-item" onclick="triggerModel('GPT-2 Text Generator')">
+                            <div class="model-meta">
+                                <h4>GPT-2 Text Generator</h4>
+                                <span class="details">Highly Sequential Autoregressive Token Generation</span>
+                            </div>
+                            <button class="btn btn-primary btn-run">DEPLOY</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="dashboard-footer">
+            <p>Thermal State: <span id="state-efficiency" class="status-ok">Idle / Energy Saver</span></p>
+            <p>System Fan Speed: <span id="val-fan">20%</span></p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
